@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.1.0" // Use a recent stable Kotlin version
+    kotlin("jvm") version "2.1.21" // Use a recent stable Kotlin version
 }
 
 allprojects {

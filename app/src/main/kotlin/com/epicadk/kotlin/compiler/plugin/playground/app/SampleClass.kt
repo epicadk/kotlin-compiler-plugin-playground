@@ -8,3 +8,7 @@ class SampleClass {
         println("Hello from SampleClass!")
     }
 }
+
+fun main() {
+    SampleClass().greet()
+}
