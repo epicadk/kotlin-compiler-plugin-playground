@@ -155,7 +155,18 @@ class MyIrTransformer(private val pluginContext: IrPluginContext) : IrElementTra
     override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
         if (declaration.hasAnnotation(myAnnotationFqName)) {
             println("Compiler Plugin: Found MyAnnotation on function ${declaration.name}")
-            // TODO: Add IR transformation logic for annotated functions
+
+            // Emit a warning if the annotated function returns Unit
+            if (declaration.returnType.isUnit()) {
+                pluginContext.bindingContext.diagnostics.report(
+                    // TODO: Define a custom diagnostic factory
+                    // For now, using a built-in diagnostic
+                    org.jetbrains.kotlin.diagnostics.DiagnosticFactory0.create<org.jetbrains.kotlin.diagnostics.DiagnosticFactory0<org.jetbrains.kotlin.psi.KtDeclaration>>(
+                        org.jetbrains.kotlin.diagnostics.Severity.WARNING,
+                        "Function annotated with @MyAnnotation should not return Unit"
+                    ).on(declaration.psi ?: return super.visitSimpleFunction(declaration))
+                )
+            }
         }
         return super.visitSimpleFunction(declaration)
     }
