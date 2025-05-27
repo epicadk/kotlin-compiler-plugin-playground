@@ -15,11 +15,18 @@ import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.isUnit
 import org.jetbrains.kotlin.ir.util.SYNTHETIC_OFFSET
 import org.jetbrains.kotlin.ir.util.functions
+import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.expressions.*
+import org.jetbrains.kotlin.ir.expressions.impl.*
+import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
 class MyIrTransformer(private val pluginContext: IrPluginContext) : IrElementTransformerVoid() {
+
+    private val myAnnotationFqName = FqName("com.epicadk.kotlin.compiler.plugin.playground.annotation.MyAnnotation")
 
     override fun visitFile(declaration: IrFile): IrFile {
         // Find the main function in the app module
@@ -70,8 +77,39 @@ class MyIrTransformer(private val pluginContext: IrPluginContext) : IrElementTra
         return super.visitFile(declaration)
     }
 
+    override fun visitClass(declaration: IrClass): IrStatement {
+        if (declaration.hasAnnotation(myAnnotationFqName)) {
+            println("Compiler Plugin: Found MyAnnotation on class ${declaration.name}")
+            // TODO: Add IR transformation logic for annotated classes
+        }
+        return super.visitClass(declaration)
+    }
+
+    override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
+        if (declaration.hasAnnotation(myAnnotationFqName)) {
+            println("Compiler Plugin: Found MyAnnotation on function ${declaration.name}")
+            // TODO: Add IR transformation logic for annotated functions
+        }
+        return super.visitSimpleFunction(declaration)
+    }
+
+    override fun visitProperty(declaration: IrProperty): IrStatement {
+        if (declaration.hasAnnotation(myAnnotationFqName)) {
+            println("Compiler Plugin: Found MyAnnotation on property ${declaration.name}")
+            // TODO: Add IR transformation logic for annotated properties
+        }
+        return super.visitProperty(declaration)
+    }
+
     // Helper function to check if a type is String
     private fun IrType.isString(): Boolean {
         return this == pluginContext.irBuiltIns.stringType
+    }
+
+    // Helper function to check for annotation
+    private fun IrAnnotationContainer.hasAnnotation(fqName: FqName): Boolean {
+        return annotations.any {
+            it.type.classifierOrNull?.owner?.fqNameWhenAvailable == fqName
+        }
     }
 }
