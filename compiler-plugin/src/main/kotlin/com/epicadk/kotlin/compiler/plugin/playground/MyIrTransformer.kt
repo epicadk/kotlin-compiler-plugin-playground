@@ -80,7 +80,74 @@ class MyIrTransformer(private val pluginContext: IrPluginContext) : IrElementTra
     override fun visitClass(declaration: IrClass): IrStatement {
         if (declaration.hasAnnotation(myAnnotationFqName)) {
             println("Compiler Plugin: Found MyAnnotation on class ${declaration.name}")
-            // TODO: Add IR transformation logic for annotated classes
+
+            // Add a synthetic property
+            val syntheticProperty = pluginContext.irFactory.createProperty(
+                startOffset = SYNTHETIC_OFFSET,
+                endOffset = SYNTHETIC_OFFSET,
+                origin = IrDeclarationOrigin.SYNTHETIC_PROPERTY,
+                name = Name.identifier("syntheticProperty"),
+                visibility = declaration.visibility,
+                isVar = false,
+                isConst = false,
+                isLateinit = false,
+                isDelegated = false
+            ).apply {
+                parent = declaration
+                backingField = pluginContext.irFactory.createField(
+                    startOffset = SYNTHETIC_OFFSET,
+                    endOffset = SYNTHETIC_OFFSET,
+                    origin = IrDeclarationOrigin.SYNTHETIC_PROPERTY_BACKING_FIELD,
+                    name = name,
+                    visibility = visibility,
+                    isFinal = true,
+                    isExternal = false,
+                    isStatic = false,
+                    type = pluginContext.irBuiltIns.stringType // Type of the synthetic property
+                ).apply {
+                    parent = declaration
+                }
+                getter = pluginContext.irFactory.createSimpleFunction(
+                    startOffset = SYNTHETIC_OFFSET,
+                    endOffset = SYNTHETIC_OFFSET,
+                    origin = IrDeclarationOrigin.SYNTHETIC_ACCESSOR,
+                    name = Name.identifier("get${name.asString().capitalize()}"),
+                    visibility = visibility,
+                    isInline = false,
+                    isExpect = false,
+                    returnType = backingField!!.type,
+                    modality = Modality.FINAL,
+                    symbol = pluginContext.irFactory.createSimpleFunctionSymbol()
+                ).apply {
+                    parent = declaration
+                    body = pluginContext.irFactory.createBlockBody(
+                        startOffset = SYNTHETIC_OFFSET,
+                        endOffset = SYNTHETIC_OFFSET,
+                        statements = listOf(
+                            IrReturnImpl(
+                                startOffset = SYNTHETIC_OFFSET,
+                                endOffset = SYNTHETIC_OFFSET,
+                                type = returnType,
+                                returnTargetSymbol = symbol,
+                                value = IrGetFieldImpl(
+                                    startOffset = SYNTHETIC_OFFSET,
+                                    endOffset = SYNTHETIC_OFFSET,
+                                    symbol = backingField!!.symbol,
+                                    type = backingField!!.type,
+                                    origin = IrStatementOrigin.GET_PROPERTY
+                                ).apply {
+                                    receiver = IrGetValueImpl(
+                                        startOffset = SYNTHETIC_OFFSET,
+                                        endOffset = SYNTHETIC_OFFSET,
+                                        symbol = declaration.thisReceiver!!.symbol
+                                    )
+                                }
+                            )
+                        )
+                    )
+                }
+            }
+            declaration.declarations.add(syntheticProperty)
         }
         return super.visitClass(declaration)
     }
