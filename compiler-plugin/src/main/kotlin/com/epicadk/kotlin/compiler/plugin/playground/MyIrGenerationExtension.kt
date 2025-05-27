@@ -18,8 +18,8 @@ import org.jetbrains.kotlin.ir.types.isNullableAny
 import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 import org.jetbrains.kotlin.name.CallableId
-import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
  * An example of an IrGenerationExtension.
@@ -38,9 +38,12 @@ class MyIrGenerationExtension(private val messageCollector: MessageCollector) : 
             CompilerMessageSeverity.INFO,
             "MyIrGenerationExtension: Starting IR processing for module ${moduleFragment.name}"
         )
-
         val printlnFunSymbol = pluginContext.referenceFunctions(
-            CallableId(packageName = FqName("kotlin.io"), callableName = Name.identifier("println")))
+            CallableId(
+                packageName = StandardClassIds.BASE_KOTLIN_PACKAGE.child(Name.identifier("io")),
+                callableName = Name.identifier("println")
+            )
+        )
             .firstOrNull {
                 val parameters = it.owner.valueParameters
                 parameters.size == 1 && parameters[0].type.isNullableAny()
