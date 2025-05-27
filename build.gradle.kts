@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.22" // Use a recent stable Kotlin version
+    kotlin("jvm") version "2.1.0" // Use a recent stable Kotlin version
 }
 
 allprojects {
@@ -8,7 +8,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/kotlin/p/compiler/dev") // For compiler dependencies
     }
 }
 
