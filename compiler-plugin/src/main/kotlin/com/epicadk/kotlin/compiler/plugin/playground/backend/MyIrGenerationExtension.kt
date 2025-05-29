@@ -1,4 +1,4 @@
-package com.epicadk.kotlin.compiler.plugin.playground
+package com.epicadk.kotlin.compiler.plugin.playground.backend
 
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
